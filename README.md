@@ -1,5 +1,7 @@
 # Rust Server - Modern Edition
 
+> 🌍 [English version available](README_EN.md)
+
 Servidor dedicado de Rust modernizado con **Ubuntu 22.04 LTS** y **Node.js 20 LTS**.
 
 ## Características
