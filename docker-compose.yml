@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  rust-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rustserver/rust-server:latest
+    container_name: rust-server
+    restart: unless-stopped
+    ports:
+      - "28015:28015"          # Rust game port (TCP)
+      - "28015:28015/udp"      # Rust game port (UDP)
+      - "28016:28016"          # Rust RCON port
+      - "8080:8080"            # Rust+ companion app
+      - "28082:28082"          # Application port
+    volumes:
+      - ./rust-data:/steamcmd/rust
+    environment:
+      # Configuración básica del servidor
+      RUST_SERVER_STARTUP_ARGUMENTS: "-batchmode -load -nographics +server.secure 1"
+      RUST_SERVER_IDENTITY: "rust-server"
+      RUST_SERVER_SEED: "12345"
+      RUST_SERVER_WORLDSIZE: "3500"
+      RUST_SERVER_MAXPLAYERS: "50"
+      RUST_SERVER_NAME: "Mi Servidor Rust Modernizado"
+      RUST_SERVER_URL: "https://ejemplo.com"
+      RUST_SERVER_DESCRIPTION: "Servidor de Rust con Ubuntu 24.04 y Node.js 20"
+      
+      # RCON (administración remota)
+      RUST_RCON_PASSWORD: "cambiar_esta_password"
+      RUST_RCON_PORT: "28016"
+      RUST_RCON_WEB: "1"
+      
+      # Configuración adicional
+      RUST_SERVER_SAVE_INTERVAL: "300"
+      RUST_UPDATE_CHECKING: "0"
+      RUST_START_MODE: "0"
+      RUST_UPDATE_BRANCH: "public"
+      RUST_OXIDE_ENABLED: "0"
+      RUST_OXIDE_UPDATE_ON_BOOT: "1"
+      
+      # IDs de usuario (Ubuntu 24.04 compatible)
+      PUID: "1001"
+      PGID: "1001"
+    
+    # Limitar recursos (opcional)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
