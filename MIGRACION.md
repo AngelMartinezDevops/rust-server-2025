@@ -1,4 +1,4 @@
-# 📋 Notas de Migración - Ubuntu 18.04 → 24.04
+# 📋 Notas de Migración - Ubuntu 18.04 → 22.04
 
 ## 🎯 Resumen de Cambios
 
@@ -8,7 +8,7 @@ Esta imagen ha sido completamente modernizada manteniendo la compatibilidad func
 
 ### 1. Sistema Operativo
 - **Antes**: Ubuntu 18.04 (EOL Abril 2023)
-- **Ahora**: Ubuntu 24.04 LTS (Soporte hasta 2029)
+- **Ahora**: Ubuntu 22.04 LTS (Soporte hasta 2027, compatible con SteamCMD)
 
 ### 2. Runtime JavaScript
 - **Antes**: Node.js 12 (EOL Abril 2022)
@@ -18,7 +18,7 @@ Esta imagen ha sido completamente modernizada manteniendo la compatibilidad func
 
 | Paquete Antiguo | Paquete Nuevo | Motivo |
 |----------------|---------------|---------|
-| `bsdtar` | `libarchive-tools` | Renombrado en Ubuntu 24.04 |
+| `bsdtar` | `libarchive-tools` | Renombrado en Ubuntu 22.04 |
 | `lib32gcc1` | `lib32gcc-s1` | Actualización GCC |
 | `python-dev` | `python3-dev` | Python 2 deprecado |
 
@@ -31,15 +31,12 @@ Esta imagen ha sido completamente modernizada manteniendo la compatibilidad func
 PUID: 1000
 PGID: 1000
 
-# Ubuntu 24.04 (conflicto con usuario ubuntu)
-PUID: 1001
-PGID: 1001
+# Ubuntu 22.04
+PUID: 1000
+PGID: 1000
 ```
 
-**Solución para datos existentes:**
-```bash
-sudo chown -R 1001:1001 /ruta/a/rust-data
-```
+**Nota:** Los UIDs se mantienen en 1000:1000, sin cambios necesarios para datos existentes.
 
 ### 5. npm Registry
 
@@ -67,14 +64,12 @@ RUN rm -f .npmrc package-lock.json && npm install --registry=https://registry.np
 
 2. **IDs de usuario**
 ```dockerfile
-# Antes
+# Se mantiene igual en ambas versiones
 RUN groupadd --system --gid 1000 docker
 RUN useradd --uid 1000 --gid 1000 docker
-
-# Ahora
-RUN groupadd --system --gid 1001 docker
-RUN useradd --uid 1001 --gid 1001 docker
 ```
+
+**Nota**: Los UIDs se mantienen en 1000:1000 para máxima compatibilidad.
 
 3. **Configuración npm global**
 ```dockerfile
@@ -87,7 +82,7 @@ RUN npm config set registry https://registry.npmjs.org/
 - **Imagen Base Original**: ~1.2 GB
 - **Imagen Modernizada**: ~1.65 GB
 
-*Aumento debido a dependencias más recientes y completas de Ubuntu 24.04*
+*Aumento debido a dependencias más recientes y completas de Ubuntu 22.04*
 
 ## ✅ Compatibilidad
 
@@ -99,8 +94,8 @@ RUN npm config set registry https://registry.npmjs.org/
 - Puertos y volúmenes
 
 ### Cambios Necesarios ✗
-- IDs de usuario (1000 → 1001)
-- Permisos de archivos existentes
+- **Ninguno** - Los UIDs se mantienen en 1000:1000
+- Uso de volúmenes Docker recomendado para evitar problemas de permisos
 
 ## 🔧 Guía de Migración
 
@@ -118,29 +113,33 @@ cp -r ./rust-data ./rust-data.backup
 
 ### Paso 3: Detener servidor antiguo
 ```bash
-docker-compose down
+docker compose down
 ```
 
-### Paso 4: Ajustar permisos
-```bash
-# Solo si migras datos existentes
-sudo chown -R 1001:1001 ./rust-data
+### Paso 4: Usar volúmenes Docker (recomendado)
+```yaml
+# En docker-compose.yml
+volumes:
+  - rust-data:/steamcmd/rust  # Volumen Docker en lugar de ./rust-data
+
+volumes:
+  rust-data:
 ```
 
 ### Paso 5: Actualizar docker-compose.yml
 ```yaml
 services:
   rust-server:
-    image: rustserver/rust-server:latest  # Nueva imagen
+    image: b3lerofonte/rust-server:latest  # Nueva imagen
+    user: "1000:1000"  # Asegurar UID/GID
+    volumes:
+      - rust-data:/steamcmd/rust  # Volumen Docker
     # ... resto de configuración
-    environment:
-      PUID: "1001"  # Cambiar de 1000
-      PGID: "1001"  # Cambiar de 1000
 ```
 
 ### Paso 6: Iniciar
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 🐛 Problemas Conocidos
@@ -176,7 +175,7 @@ npm warn deprecated request@2.88.2
 
 ## 📚 Referencias
 
-- [Ubuntu 24.04 Release Notes](https://ubuntu.com/blog/ubuntu-24-04-noble-numbat-released)
+- [Ubuntu 22.04 Release Notes](https://ubuntu.com/blog/ubuntu-22-04-lts-released)
 - [Node.js 20 LTS](https://nodejs.org/en/blog/release/v20.0.0)
 - [Rust Server Original](https://github.com/Didstopia/rust-server)
 
@@ -184,5 +183,5 @@ npm warn deprecated request@2.88.2
 
 - **Proyecto Original**: Didstopia
 - **Modernización**: 2025
-- **Base**: Ubuntu 24.04 LTS + Node.js 20 LTS
+- **Base**: Ubuntu 22.04 LTS + Node.js 20 LTS
 

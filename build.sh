@@ -6,7 +6,7 @@ echo ""
 
 # Tags de la imagen
 IMAGE_NAME="rustserver/rust-server"
-TAG_UBUNTU="ubuntu-24.04"
+TAG_UBUNTU="ubuntu-22.04"
 TAG_NODEJS="nodejs-20"
 TAG_LATEST="latest"
 

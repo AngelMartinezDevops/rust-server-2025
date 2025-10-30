@@ -4,16 +4,12 @@ Write-Host "🚀 Construyendo imagen del servidor Rust modernizado..." -Foregrou
 Write-Host ""
 
 # Tags de la imagen
-$IMAGE_NAME = "rustserver/rust-server"
-$TAG_UBUNTU = "ubuntu-24.04"
-$TAG_NODEJS = "nodejs-20"
-$TAG_LATEST = "latest"
+$IMAGE_NAME = "b3lerofonte/rust-server"
+$TAG = "latest"
 
-# Construir con múltiples tags
+# Construir imagen
 docker build `
-  -t "${IMAGE_NAME}:${TAG_UBUNTU}" `
-  -t "${IMAGE_NAME}:${TAG_NODEJS}" `
-  -t "${IMAGE_NAME}:${TAG_LATEST}" `
+  -t "${IMAGE_NAME}:${TAG}" `
   .
 
 if ($LASTEXITCODE -eq 0) {
